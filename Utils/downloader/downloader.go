@@ -73,6 +73,9 @@ func (d *Downloader) ShowProgress() {
 			bar.Add(int(d.downloadThreads[i].GetProgress() * 10))
 		}
 
+		if bar.IsFinished() {
+			return
+		}
 		time.Sleep(time.Second * 1)
 	}
 }
