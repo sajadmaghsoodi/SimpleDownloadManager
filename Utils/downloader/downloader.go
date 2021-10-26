@@ -18,7 +18,7 @@ type Downloader struct {
 	size            int64
 	threadCount     int
 	downloadPath    string
-	downloadThreads []Thread
+	downloadThreads []*Thread
 }
 
 var wg sync.WaitGroup
@@ -66,11 +66,11 @@ func (d *Downloader) FetchSize() error {
 
 func (d *Downloader) ShowProgress() {
 
-	bar := progressbar.Default(100)
+	bar := progressbar.Default(d.size / 1024)
 	for {
 		bar.Clear()
 		for i := 0; i < d.threadCount; i++ {
-			bar.Add(int(d.downloadThreads[i].GetProgress() * 10))
+			bar.Add(int(d.downloadThreads[i].progress * float32(d.size/1024)))
 		}
 
 		if bar.IsFinished() {
@@ -103,7 +103,7 @@ func (d *Downloader) startDownloadThreads() {
 		}
 
 		thread := *NewThread(d.url, min, max, i, d)
-		d.downloadThreads = append(d.downloadThreads, thread)
+		d.downloadThreads = append(d.downloadThreads, &thread)
 
 		go thread.Start()
 	}
@@ -112,7 +112,7 @@ func (d *Downloader) startDownloadThreads() {
 }
 
 func (d *Downloader) CreateDownloadedFile() {
-
+	println("Processing File...")
 	result := make([]byte, 0)
 	for i := 0; i < d.threadCount; i++ {
 
